@@ -59,7 +59,7 @@ export const SearchBooksPage = (): ReactElement | null => {
 		<div>
 			<div className="container">
 				<div>
-					<div className="row mt-5">
+					<div className="row mt-5 pt-5">
 						<div className="col-6">
 							<div className="d-flex">
 								<input className="form-control me-2" type="search" placeholder="Search" aria-labelledby="Search" />
