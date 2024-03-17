@@ -2,16 +2,21 @@ import { ReactElement, useEffect, useState } from "react";
 import { SearchBook } from "./components/SearchBook";
 import { BookModel } from "../../models/BookModel";
 import { SpinnerLoading } from "../utils/SpinnerLoading";
+import { Pagination } from "../utils/Pagination";
 
 export const SearchBooksPage = (): ReactElement | null => {
 	const [books, setBooks] = useState<BookModel[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [httpError, setHttpError] = useState<string | null>(null);
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [booksPerPage] = useState<number>(5);
+	const [totalAmountOfBooks, setTotalAmountOfBooks] = useState<number>(0);
+	const [totalPages, setTotalPages] = useState<number>(0);
 
 	useEffect(() => {
 		(async () => {
 			const baseUrl: string = "http://localhost:8080/api/books";
-			const url: string = `${baseUrl}?page=0&size=5`;
+			const url: string = `${baseUrl}?page=${currentPage - 1}&size=${booksPerPage}`;
 			const response = await fetch(url);
 			if (!response.ok) {
 				setIsLoading(false);
@@ -21,6 +26,8 @@ export const SearchBooksPage = (): ReactElement | null => {
 			}
 			const jsonResponse = await response.json();
 			const responseData = jsonResponse._embedded.books;
+			setTotalAmountOfBooks(jsonResponse.page.totalElements);
+			setTotalPages(jsonResponse.page.totalPages);
 			const loadedBooks: BookModel[] = [];
 			for (const key in responseData) {
 				loadedBooks.push(
@@ -38,28 +45,30 @@ export const SearchBooksPage = (): ReactElement | null => {
 			}
 			setBooks(loadedBooks);
 			setIsLoading(false);
+			window.scrollTo(0, 0);
 		})();
-	}, []);
-
-	if (isLoading) {
-		return (
-			<SpinnerLoading />
-		)
-	}
+	}, [booksPerPage, currentPage]);
 
 	if (httpError) {
 		return (
-			<div className='container m-5'>
+			<div className='container pageWrapper'>
 				<p>{httpError}</p>
 			</div>
 		)
 	}
 
+	const indexOfLastBook: number = currentPage * booksPerPage;
+	const indexOfFirstBook: number = indexOfLastBook - booksPerPage;
+	let lastItem = booksPerPage * currentPage <= totalAmountOfBooks? booksPerPage * currentPage : totalAmountOfBooks;
+
+	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
 	return (
-		<div>
+		<div className="pageWrapper">
+		{isLoading? <SpinnerLoading/> :
 			<div className="container">
 				<div>
-					<div className="row mt-5 pt-5">
+					<div className="row">
 						<div className="col-6">
 							<div className="d-flex">
 								<input className="form-control me-2" type="search" placeholder="Search" aria-labelledby="Search" />
@@ -104,16 +113,19 @@ export const SearchBooksPage = (): ReactElement | null => {
 						</div>
 					</div>
 					<div className="mt-3">
-						<h5>Number of results: (22)</h5>
+						<h5>Number of results: ({totalAmountOfBooks})</h5>
 					</div>
 					<p>
-						1 to 5 of 22 items:
+						{indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
 					</p>
 					{books.map(
 						book => <SearchBook book={book} key={book.id} />
 					)}
+					{totalPages > 1 && 
+					<Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate}/>}
 				</div>
 			</div>
+		}
 		</div>
 	);
 }

@@ -52,3 +52,7 @@
     pointer-events: none;
     cursor: default;
  }
+
+ .pageWrapper {
+	margin-top: 100px;
+ }
