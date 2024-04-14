@@ -35,7 +35,6 @@ export const Pagination = (props: PaginationProp) : ReactElement | null => {
 		}
 	}
 
-
 	return (
 		<nav aria-label="...">
 			<ul className="pagination">
