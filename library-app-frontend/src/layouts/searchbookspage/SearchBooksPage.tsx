@@ -79,7 +79,7 @@ export const SearchBooksPage = (): ReactElement | null => {
 	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
 	return (
-		<div className="pageWrapper">
+		<div className="pageWrapper mb-5">
 		{isLoading? <SpinnerLoading/> :
 			<div className="container">
 				<div>
@@ -130,9 +130,9 @@ export const SearchBooksPage = (): ReactElement | null => {
 					<div className="mt-3">
 						<h5>Number of results: ({totalAmountOfBooks})</h5>
 					</div>
-					<p>
+					{totalAmountOfBooks > 0 && <p>
 						{indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
-					</p>
+					</p>}
 					{books.map(
 						book => <SearchBook book={book} key={book.id} />
 					)}
