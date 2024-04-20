@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useMemo, useState } from "react";
 import { SearchBook } from "./components/SearchBook";
 import { BookModel } from "../../models/BookModel";
 import { SpinnerLoading } from "../utils/SpinnerLoading";
@@ -14,6 +14,36 @@ export const SearchBooksPage = (): ReactElement | null => {
 	const [totalPages, setTotalPages] = useState<number>(0);
 	const [search, setSearch] = useState<string>('');
 	const [searchUrl, setSearchUrl] = useState<string>('');
+
+
+	const searchResult = useMemo((): ReactElement => {
+		const indexOfLastBook: number = currentPage * Math.min(totalAmountOfBooks, booksPerPage);
+		const indexOfFirstBook: number = Math.max(0, indexOfLastBook - booksPerPage);
+		let lastItem = booksPerPage * currentPage <= totalAmountOfBooks ? booksPerPage * currentPage : totalAmountOfBooks;
+		return (
+			<>
+				<div className="mt-3">
+				{totalAmountOfBooks > 0 ?
+					<>
+						<h5>Number of results: ({totalAmountOfBooks})</h5>
+						<p>
+							{indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
+						</p>
+					</>
+					:
+					<div>
+						<h3> Can't find what you are looking for? </h3>
+						<a type='button' className="btn main-color btn-md px-4 me-md-2 fw-bold text-white" href='#'>
+							Library Services
+						</a>
+					</div>}
+					</div>
+				{books.map(
+					book => <SearchBook book={book} key={book.id} />
+				)}
+			</>
+		)
+	}, [books, booksPerPage, currentPage, totalAmountOfBooks]);
 
 	useEffect(() => {
 		(async () => {
@@ -72,75 +102,63 @@ export const SearchBooksPage = (): ReactElement | null => {
 		}
 	}
 
-	const indexOfLastBook: number = currentPage * Math.min(totalAmountOfBooks, booksPerPage);
-	const indexOfFirstBook: number = Math.max(0, indexOfLastBook - booksPerPage);
-	let lastItem = booksPerPage * currentPage <= totalAmountOfBooks? booksPerPage * currentPage : totalAmountOfBooks;
-
 	const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
 	return (
 		<div className="pageWrapper mb-5">
-		{isLoading? <SpinnerLoading/> :
-			<div className="container">
-				<div>
-					<div className="row">
-						<div className="col-6">
-							<div className="d-flex">
-								<input className="form-control me-2" type="search" placeholder="Search" aria-labelledby="Search" onChange={(e) => setSearch(e.target.value)}/>
-								<button className="btn btn-outline-success" onClick={() => searchHandleChange()}>
-									Search
-								</button>
+			{isLoading ? <SpinnerLoading /> :
+				<div className="container">
+					<div>
+						<div className="row">
+							<div className="col-6">
+								<div className="d-flex">
+									<input className="form-control me-2" type="search" placeholder="Search" aria-labelledby="Search" onChange={(e) => setSearch(e.target.value)} />
+									<button className="btn btn-outline-success" onClick={() => searchHandleChange()}>
+										Search
+									</button>
+								</div>
+							</div>
+							<div className="col-4">
+								<div className="dropdown">
+									<button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuBUtton1" data-bs-toggle="dropdown" aria-expanded="false">
+										Category
+									</button>
+									<ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+										<li>
+											<a className="dropdown-item" href="#">
+												All
+											</a>
+										</li>
+										<li>
+											<a className="dropdown-item" href="#">
+												Frontend
+											</a>
+										</li>
+										<li>
+											<a className="dropdown-item" href="#">
+												Backend
+											</a>
+										</li>
+										<li>
+											<a className="dropdown-item" href="#">
+												Data
+											</a>
+										</li>
+										<li>
+											<a className="dropdown-item" href="#">
+												DevOps
+											</a>
+										</li>
+									</ul>
+								</div>
 							</div>
 						</div>
-						<div className="col-4">
-							<div className="dropdown">
-								<button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuBUtton1" data-bs-toggle="dropdown" aria-expanded="false">
-									Category
-								</button>
-								<ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-									<li>
-										<a className="dropdown-item" href="#">
-											All
-										</a>
-									</li>
-									<li>
-										<a className="dropdown-item" href="#">
-											Frontend
-										</a>
-									</li>
-									<li>
-										<a className="dropdown-item" href="#">
-											Backend
-										</a>
-									</li>
-									<li>
-										<a className="dropdown-item" href="#">
-											Data
-										</a>
-									</li>
-									<li>
-										<a className="dropdown-item" href="#">
-											DevOps
-										</a>
-									</li>
-								</ul>
-							</div>
-						</div>
+						{searchResult}
+						{totalPages > 1 &&
+							<Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate} />}
 					</div>
-					<div className="mt-3">
-						<h5>Number of results: ({totalAmountOfBooks})</h5>
-					</div>
-					{totalAmountOfBooks > 0 && <p>
-						{indexOfFirstBook} to {lastItem} of {totalAmountOfBooks} items:
-					</p>}
-					{books.map(
-						book => <SearchBook book={book} key={book.id} />
-					)}
-					{totalPages > 1 && 
-					<Pagination currentPage={currentPage} totalPages={totalPages} paginate={paginate}/>}
 				</div>
-			</div>
-		}
+			}
 		</div>
 	);
 }
